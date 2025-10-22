@@ -108,11 +108,9 @@ def register():
     if not username or not password:
         return jsonify({'message': 'Username e password são obrigatórios'}), 400
     
-    # Verificar se usuário já existe
     if User.query.filter_by(username=username).first():
         return jsonify({'message': 'Usuário já existe'}), 400
     
-    # Criar novo usuário
     hashed_password = generate_password_hash(password)
     new_user = User(username=username, password=hashed_password)
     
@@ -163,7 +161,6 @@ def verify(current_user):
 @app.route('/api/counts', methods=['GET'])
 @token_required
 def get_counts(current_user):
-    """Retorna todas as contagens registradas"""
     counts = Count.query.order_by(Count.timestamp.desc()).all()
     return jsonify({
         'counts': [count.to_dict() for count in counts],
@@ -173,7 +170,6 @@ def get_counts(current_user):
 @app.route('/api/counts/today', methods=['GET'])
 @token_required
 def get_today_counts(current_user):
-    """Retorna contagens do dia atual"""
     today = datetime.datetime.now().date()
     today_start = datetime.datetime.combine(today, datetime.time.min)
     today_end = datetime.datetime.combine(today, datetime.time.max)
@@ -194,26 +190,21 @@ def get_today_counts(current_user):
 @app.route('/api/counts/stats', methods=['GET'])
 @token_required
 def get_stats(current_user):
-    """Retorna estatísticas gerais"""
     now = datetime.datetime.now()
     today = now.date()
     today_start = datetime.datetime.combine(today, datetime.time.min)
     week_ago = now - datetime.timedelta(days=7)
     month_ago = now - datetime.timedelta(days=30)
     
-    # Total geral
     all_counts = Count.query.all()
     total_animals = sum(count.count for count in all_counts)
     
-    # Hoje
     today_counts = Count.query.filter(Count.timestamp >= today_start).all()
     today_total = sum(count.count for count in today_counts)
     
-    # Semana
     week_counts = Count.query.filter(Count.timestamp >= week_ago).all()
     week_total = sum(count.count for count in week_counts)
     
-    # Mês
     month_counts = Count.query.filter(Count.timestamp >= month_ago).all()
     month_total = sum(count.count for count in month_counts)
     
@@ -227,7 +218,6 @@ def get_stats(current_user):
 
 @app.route('/api/count', methods=['POST'])
 def add_count():
-    """Endpoint para a Raspberry Pi enviar contagens"""
     data = request.get_json()
     
     device_id = data.get('device_id', 'unknown')
@@ -258,7 +248,6 @@ def add_count():
 @app.route('/api/devices', methods=['GET'])
 @token_required
 def get_devices(current_user):
-    """Lista todos os dispositivos Raspberry Pi registrados"""
     devices = Device.query.all()
     return jsonify({
         'devices': [device.to_dict() for device in devices],
@@ -268,7 +257,6 @@ def get_devices(current_user):
 @app.route('/api/devices/register', methods=['POST'])
 @token_required
 def register_device(current_user):
-    """Registra um novo dispositivo Raspberry Pi"""
     data = request.get_json()
     
     device_name = data.get('name', 'Raspberry Pi')
@@ -296,7 +284,6 @@ def register_device(current_user):
 
 @app.route('/api/devices/<device_id>/heartbeat', methods=['POST'])
 def device_heartbeat(device_id):
-    """Atualiza o status do dispositivo (heartbeat)"""
     device = Device.query.get(device_id)
     
     if not device:
@@ -315,7 +302,6 @@ def device_heartbeat(device_id):
 @app.route('/api/devices/<device_id>', methods=['DELETE'])
 @token_required
 def delete_device(current_user, device_id):
-    """Remove um dispositivo"""
     device = Device.query.get(device_id)
     
     if not device:
@@ -333,12 +319,11 @@ def delete_device(current_user, device_id):
 
 @app.route('/api/test', methods=['GET'])
 def test():
-    """Rota de teste para verificar se o servidor está funcionando"""
     return jsonify({
         'message': 'Servidor funcionando!',
         'timestamp': datetime.datetime.now().isoformat()
     }), 200
 
 if __name__ == '__main__':
-    init_db()  # Inicializa o banco de dados
+    init_db()  
     app.run(debug=True, host='0.0.0.0', port=5000)

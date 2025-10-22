@@ -29,12 +29,10 @@ function App() {
       const interval = setInterval(loadDashboardData, 5000); // Atualiza a cada 5 segundos
       return () => clearInterval(interval);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, view]);
 
   const loadDashboardData = async () => {
     try {
-      // Carregar estatísticas
       const statsResponse = await fetch(`${API_URL}/counts/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -43,7 +41,6 @@ function App() {
         setStats(statsData);
       }
 
-      // Carregar contagens recentes
       const countsResponse = await fetch(`${API_URL}/counts/today`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -52,7 +49,6 @@ function App() {
         setRecentCounts(countsData.counts.slice(-10).reverse());
       }
 
-      // Carregar dispositivos
       const devicesResponse = await fetch(`${API_URL}/devices`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -114,12 +110,11 @@ function App() {
       if (response.ok) {
         setToken(data.token);
         setShowLoadingScreen(true);
-        // Simula tempo de carregamento e depois vai para o dashboard
         setTimeout(() => {
           setView('dashboard');
           setShowLoadingScreen(false);
           setPassword('');
-        }, 4000); // 4 segundos de loading (mais lento)
+        }, 4000); 
       } else {
         showMessage(data.message, 'error');
       }

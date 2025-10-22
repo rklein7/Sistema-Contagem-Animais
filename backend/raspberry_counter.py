@@ -1,8 +1,3 @@
-"""
-Script para Raspberry Pi - Sistema de Contagem de Animais
-Sensor Ultrassônico HC-SR04 + LED + Buzzer
-"""
-
 import RPi.GPIO as GPIO
 import requests
 import time
@@ -12,7 +7,6 @@ import json
 
 # ========== CONFIGURAÇÕES ==========
 
-# API do servidor
 API_URL = "http://127.0.0.1:5000/api"  # TROCAR PELO IP DO SEU SERVIDOR
 DEVICE_ID = str(uuid.uuid4())  # ID único do dispositivo
 DEVICE_NAME = "Raspberry Pi - Porteira Principal"
@@ -32,19 +26,15 @@ ANIMAL_TYPE = "bovino"   # Tipo de animal sendo monitorado
 # ========== CONFIGURAÇÃO DO GPIO ==========
 
 def setup_gpio():
-    """Configura os pinos GPIO"""
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
     
-    # Configurar sensor ultrassônico
     GPIO.setup(TRIG_PIN, GPIO.OUT)
     GPIO.setup(ECHO_PIN, GPIO.IN)
     
-    # Configurar LED e Buzzer
     GPIO.setup(LED_PIN, GPIO.OUT)
     GPIO.setup(BUZZER_PIN, GPIO.OUT)
     
-    # Garantir que estão desligados
     GPIO.output(TRIG_PIN, False)
     GPIO.output(LED_PIN, False)
     GPIO.output(BUZZER_PIN, False)
@@ -54,35 +44,27 @@ def setup_gpio():
 # ========== FUNÇÕES DO SENSOR ==========
 
 def measure_distance():
-    """
-    Mede a distância usando o sensor ultrassônico HC-SR04
-    Retorna a distância em centímetros
-    """
-    # Enviar pulso TRIG
+
     GPIO.output(TRIG_PIN, True)
-    time.sleep(0.00001)  # 10 microsegundos
+    time.sleep(0.00001)  
     GPIO.output(TRIG_PIN, False)
     
-    # Aguardar resposta ECHO
     pulse_start = time.time()
     pulse_end = time.time()
-    timeout = time.time() + 0.1  # Timeout de 100ms
+    timeout = time.time() + 0.1  
     
-    # Esperar pelo início do pulso
     while GPIO.input(ECHO_PIN) == 0:
         pulse_start = time.time()
         if pulse_start > timeout:
             return None
     
-    # Esperar pelo fim do pulso
     while GPIO.input(ECHO_PIN) == 1:
         pulse_end = time.time()
         if pulse_end > timeout:
             return None
     
-    # Calcular distância
     pulse_duration = pulse_end - pulse_start
-    distance = pulse_duration * 17150  # Velocidade do som / 2
+    distance = pulse_duration * 17150  
     distance = round(distance, 2)
     
     return distance
@@ -90,27 +72,20 @@ def measure_distance():
 # ========== FUNÇÕES DE FEEDBACK ==========
 
 def trigger_alert():
-    """
-    Acende o LED e toca o buzzer quando detecta presença
-    """
-    # LED acende
     GPIO.output(LED_PIN, True)
     
-    # Buzzer toca 3 vezes
     for _ in range(3):
         GPIO.output(BUZZER_PIN, True)
         time.sleep(0.1)
         GPIO.output(BUZZER_PIN, False)
         time.sleep(0.1)
     
-    # LED continua aceso por 2 segundos
     time.sleep(1.8)
     GPIO.output(LED_PIN, False)
 
 # ========== FUNÇÕES DE COMUNICAÇÃO COM API ==========
 
 def send_heartbeat():
-    """Envia heartbeat para o servidor"""
     try:
         response = requests.post(
             f"{API_URL}/devices/{DEVICE_ID}/heartbeat",
@@ -127,7 +102,6 @@ def send_heartbeat():
         return False
 
 def send_count(count=1, animal_type=ANIMAL_TYPE):
-    """Envia contagem para o servidor"""
     try:
         data = {
             "device_id": DEVICE_ID,
@@ -153,10 +127,7 @@ def send_count(count=1, animal_type=ANIMAL_TYPE):
         return False
 
 def register_device():
-    """Registra o dispositivo no servidor (opcional)"""
     try:
-        # Nota: Esta rota requer autenticação, então pode falhar
-        # É melhor registrar manualmente via frontend
         print(f"[INFO] Device ID: {DEVICE_ID}")
         print(f"[INFO] Para registrar, use o frontend ou API com token")
     except Exception as e:
@@ -171,7 +142,6 @@ class AnimalCounter:
         self.last_detection_time = 0
         
     def start(self):
-        """Inicia o sistema de contagem"""
         self.running = True
         print("\n" + "="*60)
         print("🐄 SISTEMA DE CONTAGEM DE ANIMAIS - RASPBERRY PI")
@@ -191,35 +161,28 @@ class AnimalCounter:
         
         try:
             while self.running:
-                # Enviar heartbeat a cada 60 segundos
                 if time.time() - last_heartbeat > 60:
                     send_heartbeat()
                     last_heartbeat = time.time()
                 
-                # Medir distância
                 distance = measure_distance()
                 
                 if distance is not None:
-                    # Verificar se detectou presença
                     if distance < DISTANCE_THRESHOLD:
                         current_time = time.time()
                         
-                        # Verificar cooldown (evita contar o mesmo animal)
                         if current_time - self.last_detection_time > COOLDOWN_TIME:
                             print(f"[{datetime.now().strftime('%H:%M:%S')}] 🎯 DETECÇÃO! Distância: {distance}cm")
                             
-                            # Acionar LED e Buzzer
                             trigger_alert()
                             
-                            # Enviar contagem para o servidor
                             if send_count(1, ANIMAL_TYPE):
                                 self.total_count += 1
                                 print(f"[{datetime.now().strftime('%H:%M:%S')}] 📊 Total contado hoje: {self.total_count}")
                             
                             self.last_detection_time = current_time
-                            print()  # Linha em branco
+                            print()  
                 
-                # Pequeno delay entre medições
                 time.sleep(0.1)
                 
         except KeyboardInterrupt:
@@ -230,7 +193,6 @@ class AnimalCounter:
             self.stop()
     
     def stop(self):
-        """Para o sistema e limpa GPIO"""
         self.running = False
         GPIO.cleanup()
         print(f"\n📊 Total de animais contados nesta sessão: {self.total_count}")
@@ -239,7 +201,6 @@ class AnimalCounter:
 # ========== MODO DE TESTE ==========
 
 def test_mode():
-    """Modo de teste para verificar componentes"""
     print("\n🔧 MODO DE TESTE")
     print("="*60)
     

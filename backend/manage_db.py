@@ -1,30 +1,23 @@
-"""
-Script para gerenciar o banco de dados
-"""
 from app import app, db, User, Count, Device
 import sys
 
 def create_database():
-    """Cria todas as tabelas do banco de dados"""
     with app.app_context():
         db.create_all()
         print("✅ Banco de dados criado com sucesso!")
 
 def drop_database():
-    """Remove todas as tabelas do banco de dados"""
     with app.app_context():
         db.drop_all()
         print("✅ Banco de dados removido com sucesso!")
 
 def reset_database():
-    """Reseta o banco de dados (remove e cria novamente)"""
     with app.app_context():
         db.drop_all()
         db.create_all()
         print("✅ Banco de dados resetado com sucesso!")
 
 def show_users():
-    """Mostra todos os usuários cadastrados"""
     with app.app_context():
         users = User.query.all()
         print(f"\n📊 Total de usuários: {len(users)}\n")
@@ -35,14 +28,13 @@ def show_users():
             print("-" * 50)
 
 def show_counts():
-    """Mostra todas as contagens registradas"""
     with app.app_context():
         counts = Count.query.all()
         print(f"\n📊 Total de contagens: {len(counts)}\n")
         total_animals = sum(count.count for count in counts)
         print(f"Total de animais contados: {total_animals}\n")
         
-        for count in counts[:10]:  # Mostra apenas os 10 primeiros
+        for count in counts[:10]:  
             print(f"ID: {count.id}")
             print(f"Dispositivo: {count.device_id}")
             print(f"Quantidade: {count.count}")
@@ -51,7 +43,6 @@ def show_counts():
             print("-" * 50)
 
 def show_devices():
-    """Mostra todos os dispositivos registrados"""
     with app.app_context():
         devices = Device.query.all()
         print(f"\n📊 Total de dispositivos: {len(devices)}\n")
@@ -64,14 +55,12 @@ def show_devices():
             print("-" * 50)
 
 def create_test_user():
-    """Cria um usuário de teste"""
     with app.app_context():
         from werkzeug.security import generate_password_hash
         
         username = "admin"
         password = "admin123"
         
-        # Verificar se já existe
         if User.query.filter_by(username=username).first():
             print(f"❌ Usuário '{username}' já existe!")
             return
@@ -89,7 +78,6 @@ def create_test_user():
         print(f"Password: {password}")
 
 def show_help():
-    """Mostra menu de ajuda"""
     print("\n" + "="*60)
     print("GERENCIADOR DE BANCO DE DADOS - Sistema de Contagem de Animais")
     print("="*60)
