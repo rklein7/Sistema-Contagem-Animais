@@ -13,7 +13,7 @@ import json
 # ========== CONFIGURAÇÕES ==========
 
 # API do servidor
-API_URL = "http://192.168.1.100:5000/api"  # TROCAR PELO IP DO SEU SERVIDOR
+API_URL = "http://127.0.0.1:5000/api"  # TROCAR PELO IP DO SEU SERVIDOR
 DEVICE_ID = str(uuid.uuid4())  # ID único do dispositivo
 DEVICE_NAME = "Raspberry Pi - Porteira Principal"
 DEVICE_LOCATION = "Entrada do Pasto"

@@ -11,7 +11,6 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   
-  // Estados para contagem de animais
   const [stats, setStats] = useState({
     total_animals: 0,
     today: 0,
